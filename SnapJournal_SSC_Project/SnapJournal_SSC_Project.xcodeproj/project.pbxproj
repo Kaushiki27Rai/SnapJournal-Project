@@ -256,6 +256,12 @@
 				DEVELOPMENT_TEAM = R7JK3KT555;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Calendar for the mood mosaic to track the emotions of the user.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "To use camera for clicking photographs.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "To save the polaroids from the app to the local device.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add photos from the device on the app to create polaroids.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "For the user to speak the files they want to find rather than typing it.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,6 +294,12 @@
 				DEVELOPMENT_TEAM = R7JK3KT555;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Calendar for the mood mosaic to track the emotions of the user.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "To use camera for clicking photographs.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "To save the polaroids from the app to the local device.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add photos from the device on the app to create polaroids.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "For the user to speak the files they want to find rather than typing it.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -60,13 +60,21 @@ final class MomentStore {
     }
 
     private func saveImage(_ image: UIImage, id: UUID) {
-        guard let data = image.jpegData(compressionQuality: 0.82) else { return }
+        guard let cgImage = image.cgImage else { return }
+        let oriented = UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
+        guard let data = oriented.jpegData(compressionQuality: 0.82) else { return }
         try? data.write(to: imagePath(for: id), options: .atomic)
     }
 
     private func loadImage(id: UUID) -> UIImage? {
-        guard let data = try? Data(contentsOf: imagePath(for: id)) else { return nil }
-        return UIImage(data: data)
+        let url = imagePath(for: id)
+        guard FileManager.default.fileExists(atPath: url.path),
+              let data = try? Data(contentsOf: url),
+              !data.isEmpty,
+              let image = UIImage(data: data),
+              let _ = image.cgImage
+        else { return nil }
+        return image
     }
 
     private func deleteImage(id: UUID) {

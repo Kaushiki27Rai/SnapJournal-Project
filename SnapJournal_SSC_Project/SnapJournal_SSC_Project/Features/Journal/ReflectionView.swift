@@ -96,11 +96,11 @@ struct ReflectionView: View {
 
             ZStack(alignment: .center) {
                 if emotion.name == "Peaceful" {
-                    Color(red: 0.94, green: 0.93, blue: 0.91)
+                    Color(UIColor.secondarySystemBackground)
                 } else {
                     LinearGradient(colors: emotion.gradient.map { $0.opacity(0.85) },
                                    startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Color.white.opacity(0.15)
+                    Color(UIColor.systemBackground).opacity(0.15)
                 }
 
                 let textColor: Color = emotion.name == "Peaceful" ? Color(UIColor.label) : .white
@@ -127,7 +127,7 @@ struct ReflectionView: View {
                         }
                 }
                 .frame(height: 56)
-                .background(emotion.name == "Peaceful" ? Color.black.opacity(0.06) : Color.white.opacity(0.12))
+                .background(emotion.name == "Peaceful" ? Color.black.opacity(0.06) : Color(UIColor.systemBackground).opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(RoundedRectangle(cornerRadius: 12)
                     .stroke(emotion.name == "Peaceful" ? Color.black.opacity(0.15) : Color.white.opacity(0.35), lineWidth: 1))
@@ -136,7 +136,7 @@ struct ReflectionView: View {
             .frame(width: cardWidth, height: stripHeight)
             .onTapGesture { publicFocused = true }
         }
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
     }
@@ -244,6 +244,10 @@ struct ReflectionView: View {
         }
         #endif
 
+        useOfflineFallback()
+    }
+
+    private func useOfflineFallback() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 self.aiPrompts = Array(self.offlineFallback.shuffled().prefix(3))
@@ -256,26 +260,15 @@ struct ReflectionView: View {
     @available(iOS 26.0, *)
     private func generateUsingFoundationModel() async {
         do {
-            let session = LanguageModelSession(
-                instructions: """
-                You are a silent journaling tool. Your only output is exactly 3 diary \
-                sentence starters, one per line, nothing else.
-
-                HARD RULES:
-                • Output exactly 3 lines, no more, no less.
-                • Every line is first-person, unfinished, ends with an ellipsis (…).
-                • Every line is 5–10 words before the ellipsis.
-                • Tone must match the emotion provided.
-                • No numbering, bullets, dashes, or list markers.
-                • No preamble, refusal, apology, or explanation.
-                • No suggestions, questions, or safety messaging.
-                """
-            )
-            let opts = GenerationOptions(temperature: 0.9, maximumResponseTokens: 80)
-            let resp = try await session.respond(
-                to: "Emotion: \(emotion.name). Output exactly 3 diary sentence starters.",
-                options: opts
-            )
+            let session = LanguageModelSession()
+            let prompt = """
+            You are a silent journaling tool. Your only output is exactly 3 diary \
+            sentence starters for someone feeling \(emotion.name), one per line, nothing else.
+            Every line is first-person, unfinished, ends with an ellipsis (…).
+            Every line is 5–10 words before the ellipsis.
+            No numbering, bullets, dashes, or list markers.
+            """
+            let resp = try await session.respond(to: prompt)
             let lines = sanitised(
                 resp.content
                     .split(separator: "\n")
@@ -290,12 +283,7 @@ struct ReflectionView: View {
                 }
             }
         } catch {
-            await MainActor.run {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    aiPrompts = Array(offlineFallback.shuffled().prefix(3))
-                    isLoadingPrompts = false
-                }
-            }
+            useOfflineFallback()
         }
     }
     #endif

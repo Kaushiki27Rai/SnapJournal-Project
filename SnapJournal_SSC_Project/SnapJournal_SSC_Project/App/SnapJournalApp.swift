@@ -31,7 +31,6 @@ struct SnapJournalApp: App {
                     MainTabView(initialTab: lastTab, onTabChange: { lastTab = $0 })
                         .environment(store)
                         .environment(albumStore)
-                        .preferredColorScheme(.light)
                         .transition(.opacity)
                 }
             }

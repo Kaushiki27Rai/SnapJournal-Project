@@ -52,7 +52,7 @@ struct CreateAlbumView: View {
                             Text("Album Name").font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(Color(UIColor.secondaryLabel))
                             ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.7))
+                                RoundedRectangle(cornerRadius: 12).fill(Color(UIColor.secondarySystemGroupedBackground))
                                 if albumName.isEmpty {
                                     Text("e.g. Summer 2025, Travels...")
                                         .font(.system(size: 15, weight: .light, design: .serif)).italic()
@@ -82,7 +82,7 @@ struct CreateAlbumView: View {
                                             .frame(width: 44, height: 44)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 10)
-                                                    .fill(selectedSticker == option.icon ? Color.white : Color.clear)
+                                                    .fill(selectedSticker == option.icon ? Color(UIColor.tertiarySystemBackground) : Color.clear)
                                                     .shadow(color: selectedSticker == option.icon
                                                         ? .black.opacity(0.08) : .clear, radius: 4, x: 0, y: 2)
                                             )

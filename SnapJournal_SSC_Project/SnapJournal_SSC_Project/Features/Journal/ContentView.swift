@@ -29,6 +29,13 @@ private enum PermissionKind {
     }
 }
 
+private struct CameraButtonPreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
 struct ContentView: View {
 
     @Environment(MomentStore.self) private var store
@@ -43,6 +50,7 @@ struct ContentView: View {
     @State private var deniedPermission: PermissionKind?
     @State private var showPermissionAlert = false
     @State private var searchText = ""
+    @State private var cameraButtonFrame: CGRect = .zero
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -65,6 +73,18 @@ struct ContentView: View {
             ZStack {
                 Color(UIColor.systemBackground).ignoresSafeArea()
                 mainContent
+
+                if showCaptureSheet {
+                    Color.black.opacity(0.001)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { showCaptureSheet = false }
+                        }
+                        .transition(.opacity)
+
+                    cameraPopover
+                        .transition(.scale(scale: 0.92, anchor: .topTrailing).combined(with: .opacity))
+                }
             }
             .navigationTitle("SnapJournal")
             .navigationBarTitleDisplayMode(.large)
@@ -92,29 +112,77 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
             }
-            .confirmationDialog("Capture the Moment", isPresented: $showCaptureSheet, titleVisibility: .visible) {
-                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    Button {
-                        showCaptureSheet = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { requestCameraAccess() }
-                    } label: {
-                        Label("Take a Photo", systemImage: "camera")
-                    }
-                }
-                Button {
-                    showCaptureSheet = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { requestPhotoLibraryAccess() }
-                } label: {
-                    Label("Choose from Photos", systemImage: "photo.on.rectangle")
-                }
-                Button("Cancel", role: .cancel) {}
-            }
             .alert(deniedPermission?.title ?? "", isPresented: $showPermissionAlert) {
                 Button("Open Settings") { openAppSettings() }
                 Button("Not Now", role: .cancel) {}
             } message: {
                 Text(deniedPermission?.message ?? "")
             }
+        }
+    }
+
+    private var cameraPopover: some View {
+        GeometryReader { geo in
+            let popoverWidth: CGFloat = 220
+            let popoverHeight: CGFloat = 110
+            let buttonMidX = cameraButtonFrame.midX
+            let popoverX = min(
+                max(buttonMidX - popoverWidth / 2, 12),
+                geo.size.width - popoverWidth - 12
+            )
+            let popoverY = cameraButtonFrame.maxY + 4
+
+            VStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { showCaptureSheet = false }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { requestCameraAccess() }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "camera.fill")
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(Color(UIColor.label))
+                                Text("Take a Photo")
+                                    .font(.system(size: 15, weight: .regular))
+                                    .foregroundStyle(Color(UIColor.label))
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16).padding(.vertical, 13)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+
+                        Divider().padding(.horizontal, 14)
+                    }
+
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { showCaptureSheet = false }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { requestPhotoLibraryAccess() }
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "photo.on.rectangle")
+                                .font(.system(size: 15))
+                                .foregroundStyle(Color(UIColor.label))
+                            Text("Choose from Photos")
+                                .font(.system(size: 15, weight: .regular))
+                                .foregroundStyle(Color(UIColor.label))
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 13)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .frame(width: popoverWidth, height: popoverHeight)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color(UIColor.separator).opacity(0.3), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.18), radius: 16, x: 0, y: 6)
+            }
+            .position(x: popoverX + popoverWidth / 2, y: popoverY + popoverHeight / 2)
         }
     }
 
@@ -136,6 +204,14 @@ struct ContentView: View {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { showCaptureSheet = true }
             } label: {
                 Image(systemName: "camera.fill").font(.system(size: 17)).foregroundStyle(Color(UIColor.label))
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear.preference(key: CameraButtonPreferenceKey.self, value: proxy.frame(in: .global))
+                        }
+                    )
+            }
+            .onPreferenceChange(CameraButtonPreferenceKey.self) { frame in
+                cameraButtonFrame = frame
             }
             .accessibilityLabel("Capture a new moment")
         }

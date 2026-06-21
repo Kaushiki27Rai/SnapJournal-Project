@@ -127,7 +127,7 @@ struct SplashView: View {
             glowOpacity = 0.55
             glowRadius = 28
         }
-        withAnimation(.easeInOut(duration: 1.4).repeatCount(2, autoreverses: true).delay(0.75)) {
+        withAnimation(.easeInOut(duration: 1.8).repeatCount(3, autoreverses: true).delay(0.75)) {
             glowRadius = 44
             glowOpacity = 0.22
         }
@@ -138,7 +138,7 @@ struct SplashView: View {
         withAnimation(.easeIn(duration: 0.5).delay(0.95)) {
             taglineOpacity = 1.0
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.60) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.50) {
             onFinished()
         }
     }

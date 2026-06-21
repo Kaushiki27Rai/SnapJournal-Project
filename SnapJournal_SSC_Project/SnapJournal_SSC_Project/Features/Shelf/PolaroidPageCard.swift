@@ -94,10 +94,10 @@ struct PolaroidPageCard: View {
             .padding(.horizontal, 14).padding(.vertical, 10).frame(width: w, alignment: .leading).frame(maxHeight: .infinity)
             .background(Group {
                 if let e = moment.emotion { LinearGradient(colors: e.gradient, startPoint: .topLeading, endPoint: .bottomTrailing) }
-                else { Color.white }
+                else { Color(UIColor.systemBackground) }
             })
         }
-        .frame(width: w, height: h).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 10))
+        .frame(width: w, height: h).background(Color(UIColor.systemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 12)
     }
 

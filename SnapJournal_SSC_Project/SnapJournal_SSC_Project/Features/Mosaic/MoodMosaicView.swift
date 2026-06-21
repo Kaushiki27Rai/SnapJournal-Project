@@ -99,7 +99,7 @@ struct MoodMosaicView: View {
                 if let a = dayAnchor { anchoredPicker(anchor: a) }
             }
             .navigationTitle("Mood Mosaic")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.automatic)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -187,7 +187,7 @@ struct MoodMosaicView: View {
                     }
                 })
             }
-            .background(Color.white)
+            .background(Color(UIColor.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .shadow(color: .black.opacity(0.20), radius: 24, x: 0, y: 12)
             .matchedGeometryEffect(id: moment.id, in: heroNS, isSource: true)

@@ -9,35 +9,72 @@ import SwiftUI
 
 struct PolaroidExportView: View {
     let moment: Moment
-    private let cw: CGFloat = 340
-    private let ph: CGFloat = 340 * 0.78
-    private let ip: CGFloat = 12
+
+    private let cardWidth: CGFloat = 280
+    private let photoHeight: CGFloat = 260
+    private let stripHeight: CGFloat = 92
+    private let cornerRadius: CGFloat = 4
+    private let imagePadding: CGFloat = 16
+
+    private var cardHeight: CGFloat { photoHeight + stripHeight }
 
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                if let emotion = moment.emotion { LinearGradient(colors: emotion.gradient, startPoint: .topLeading, endPoint: .bottomTrailing) }
-                else { Color(UIColor.systemGray5) }
-                Image(uiImage: moment.image).resizable().scaledToFill().frame(width: cw - ip*2, height: ph - ip*2).clipped().padding(ip)
-            }.frame(width: cw, height: ph).clipped()
-            VStack(alignment: .leading, spacing: 5) {
-                if !moment.publicReflection.isEmpty {
-                    Text(moment.publicReflection).font(.system(size: 13, weight: .regular, design: .serif))
-                        .foregroundStyle(Color(UIColor.label)).lineLimit(3).fixedSize(horizontal: false, vertical: true)
+                if let emotion = moment.emotion {
+                    LinearGradient(colors: emotion.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
+                } else {
+                    Color.white
                 }
-                Text(moment.date, style: .date).font(.system(size: 10, weight: .light)).foregroundStyle(Color(UIColor.secondaryLabel))
+                Image(uiImage: moment.image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: cardWidth - imagePadding * 2, height: photoHeight - imagePadding * 2)
+                    .clipped()
+                    .padding(imagePadding)
             }
-            .padding(.horizontal, 14).padding(.vertical, 12).frame(width: cw, alignment: .leading)
-            .background(Group {
-                if let emotion = moment.emotion { LinearGradient(colors: emotion.gradient, startPoint: .topLeading, endPoint: .bottomTrailing) }
-                else { Color.white }
-            })
+            .frame(width: cardWidth, height: photoHeight)
+            .clipped()
+
+            VStack(alignment: .leading, spacing: 4) {
+                if !moment.publicReflection.isEmpty {
+                    Text(moment.publicReflection)
+                        .font(.system(size: 12, weight: .regular, design: .serif))
+                        .foregroundStyle(Color.primary)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Text(moment.date, style: .date)
+                    .font(.system(size: 9, weight: .light))
+                    .foregroundStyle(Color.secondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .frame(width: cardWidth, height: stripHeight, alignment: .topLeading)
+            .background(
+                Group {
+                    if let emotion = moment.emotion {
+                        LinearGradient(colors: emotion.gradient,
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    } else {
+                        Color.white
+                    }
+                }
+            )
         }
-        .frame(width: cw).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 10))
-        .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 12)
+        .frame(width: cardWidth, height: cardHeight)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
     }
 }
 
 #Preview {
-    PolaroidExportView(moment: Moment(image: UIImage(systemName: "photo")!, date: Date(), emotion: emotionList[0], publicReflection: "A lovely memory.", privateBackNote: nil))
+    PolaroidExportView(moment: Moment(
+        image: UIImage(systemName: "photo")!,
+        date: Date(),
+        emotion: emotionList[0],
+        publicReflection: "A lovely memory.",
+        privateBackNote: nil
+    ))
 }

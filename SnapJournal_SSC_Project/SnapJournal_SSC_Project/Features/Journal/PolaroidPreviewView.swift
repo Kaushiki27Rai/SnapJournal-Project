@@ -61,7 +61,7 @@ struct PolaroidPreviewView: View {
 
                     if !hasDeveloped {
                         RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .fill(Color.white)
+                            .fill(Color(UIColor.systemBackground))
                             .overlay(
                                 Text("Developing...")
                                     .font(.system(size: 13, weight: .light, design: .serif))
@@ -141,7 +141,7 @@ struct PolaroidPreviewView: View {
                     LinearGradient(colors: emotion.gradient,
                                    startPoint: .topLeading, endPoint: .bottomTrailing)
                 } else {
-                    Color.white
+                    Color(UIColor.systemBackground)
                 }
                 Image(uiImage: image)
                     .resizable()
@@ -161,12 +161,12 @@ struct PolaroidPreviewView: View {
                             LinearGradient(colors: emotion.gradient,
                                            startPoint: .topLeading, endPoint: .bottomTrailing)
                         } else {
-                            Color.white
+                            Color(UIColor.systemBackground)
                         }
                     }
                 )
         }
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
         .animation(.easeInOut(duration: 0.4), value: selectedEmotion?.id)
@@ -211,12 +211,12 @@ struct PolaroidPreviewView: View {
             return AnyShapeStyle(LinearGradient(colors: emotion.gradient,
                                                 startPoint: .leading, endPoint: .trailing))
         } else {
-            return AnyShapeStyle(Color.white)
+            return AnyShapeStyle(Color(UIColor.systemBackground))
         }
     }
 
     private var buttonTextColor: Color {
-        selectedEmotion != nil ? .black.opacity(0.7) : Color(UIColor.label)
+        selectedEmotion != nil ? .white.opacity(0.9) : Color(UIColor.label)
     }
 }
 

@@ -61,8 +61,8 @@ struct AlbumDetailView: View {
             get: { selectedIndex.map { PagerIndex(value: $0) } },
             set: { selectedIndex = $0?.value }
         )) { pagerIndex in
-            PolaroidPagerView(moments: moments, initialIndex: pagerIndex.value,
-                              album: album, onDismiss: { selectedIndex = nil })
+            PolaroidPagerView(album: album, initialIndex: pagerIndex.value,
+                              onDismiss: { selectedIndex = nil })
                 .environment(store).environment(albumStore)
         }
     }

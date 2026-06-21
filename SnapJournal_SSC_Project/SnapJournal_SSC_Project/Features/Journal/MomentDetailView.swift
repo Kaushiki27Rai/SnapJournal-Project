@@ -122,7 +122,7 @@ struct MomentDetailView: View {
                 HStack(spacing: 8) { Image(systemName: "square.and.arrow.down").font(.system(size: 15)); Text("Save to Photos").font(.system(size: 14, weight: .medium)) }
                 .foregroundStyle(Color(UIColor.label)).frame(maxWidth: .infinity).frame(height: 44)
                 .background(LiquidGlassBackground(style: .systemUltraThinMaterial)).clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.4), lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 1))
                 .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 3)
             }
             Button(role: .destructive) { showDeleteAlert = true } label: {
@@ -140,18 +140,30 @@ struct MomentDetailView: View {
             DispatchQueue.main.async {
                 switch status {
                 case .authorized, .limited:
-                    let renderer = ImageRenderer(content: PolaroidExportView(moment: moment))
+                    let exportView = PolaroidExportView(moment: moment)
+                    let renderer = ImageRenderer(content: exportView)
                     renderer.scale = 3.0
-                    guard let rendered = renderer.uiImage else {
-                        saveErrorMessage = "Could not render the polaroid. Please try again."; showSaveError = true; return
+                    renderer.proposedSize = .init(width: 280, height: 352)
+                    guard let rendered = renderer.uiImage,
+                          let _ = rendered.cgImage else {
+                        saveErrorMessage = "Could not render the polaroid. Please try again."
+                        showSaveError = true
+                        return
                     }
-                    UIImageWriteToSavedPhotosAlbum(rendered, nil, nil, nil)
+                    UIImageWriteToSavedPhotosAlbum(
+                        rendered,
+                        PhotoSaveDelegate.shared,
+                        #selector(PhotoSaveDelegate.image(_:didFinishSavingWithError:contextInfo:)),
+                        nil
+                    )
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { showSaveSuccess = true }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { withAnimation { showSaveSuccess = false } }
                 case .denied, .restricted:
-                    saveErrorMessage = "Please allow Photos access in Settings to save this moment."; showSaveError = true
+                    saveErrorMessage = "Please allow Photos access in Settings to save this moment."
+                    showSaveError = true
                 default:
-                    saveErrorMessage = "Unable to save. Please try again."; showSaveError = true
+                    saveErrorMessage = "Unable to save. Please try again."
+                    showSaveError = true
                 }
             }
         }
@@ -185,10 +197,10 @@ struct MomentDetailView: View {
             .padding(.horizontal, 14).padding(.vertical, 10).frame(width: width, alignment: .leading).frame(maxHeight: .infinity)
             .background(Group {
                 if let emotion = moment.emotion { LinearGradient(colors: emotion.gradient, startPoint: .topLeading, endPoint: .bottomTrailing) }
-                else { Color.white }
+                else { Color(UIColor.systemBackground) }
             })
         }
-        .frame(width: width, height: height).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 10))
+        .frame(width: width, height: height).background(Color(UIColor.systemBackground)).clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(color: .black.opacity(0.18), radius: 24, x: 0, y: 12)
     }
 
@@ -250,16 +262,24 @@ struct MomentDetailView: View {
         if isFlipped { flip(); return }
         let hasContent = !privateNote.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         guard hasContent else { flip(); return }
-        let context = LAContext(); var error: NSError?
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Authenticate to view your private note.") { success, _ in
-                DispatchQueue.main.async { if success { flip() } else { showAuthFailAlert = true } }
+
+        let context = LAContext()
+        var error: NSError?
+
+        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+            flip()
+            return
+        }
+
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to view your private note.") { success, evaluationError in
+            DispatchQueue.main.async {
+                if success {
+                    self.flip()
+                } else {
+                    self.showAuthFailAlert = true
+                }
             }
-        } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to view your private note.") { success, _ in
-                DispatchQueue.main.async { if success { flip() } else { showAuthFailAlert = true } }
-            }
-        } else { flip() }
+        }
     }
 
     private func flip() {
@@ -273,5 +293,15 @@ struct MomentDetailView: View {
     NavigationStack {
         MomentDetailView(moment: Moment(image: UIImage(systemName: "photo")!, date: Date(), emotion: emotionList[0], publicReflection: "A lovely memory.", privateBackNote: nil))
             .environment(MomentStore())
+    }
+}
+
+class PhotoSaveDelegate: NSObject {
+    static let shared = PhotoSaveDelegate()
+
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            print("PhotoSave error: \(error.localizedDescription)")
+        }
     }
 }
